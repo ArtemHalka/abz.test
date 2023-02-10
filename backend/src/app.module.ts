@@ -9,12 +9,14 @@ import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from './common/pipes/validation.pipe';
 import { JwtModule } from '@nestjs/jwt';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import * as path from 'path';
+import { join } from 'path';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: path.resolve(__dirname, 'static'),
+      rootPath: join(__dirname, 'static'),
+      renderPath: '/',
+      exclude: ['/api*'],
     }),
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({

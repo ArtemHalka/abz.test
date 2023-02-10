@@ -24,6 +24,12 @@ import { Request } from 'express';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @Get('seed')
+  async seedDb() {
+    await this.userService.seedDb();
+    return { message: 'DB has been seeded' };
+  }
+
   @Get()
   getAll(@Query() paginationQuery: PaginationQueryDto) {
     return this.userService.findAll(paginationQuery);

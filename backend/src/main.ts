@@ -7,9 +7,9 @@ import * as session from 'express-session';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
-      // whitelist: true,
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,
@@ -30,7 +30,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({ credentials: true });
-  const PORT = parseInt(process.env.PORT, 10) || 3000;
+  const PORT = process.env.PORT || 3000;
   await app.listen(PORT);
 }
 bootstrap();

@@ -31,7 +31,14 @@ const UserInfo = () => {
             {error && <p className="error">{error.message}</p>}
             {user && (
                 <>
-                    <img src={config.host + user.photo} alt="user photo" />
+                    <img
+                        src={
+                            isValidUrl(user.photo)
+                                ? user.photo
+                                : config.host + user.photo
+                        }
+                        alt="user photo"
+                    />
                     <p>User name: {user.name}</p>
                     <p>User email: {user.email}</p>
                     <p>User phone: {user.phone}</p>
@@ -41,5 +48,13 @@ const UserInfo = () => {
         </>
     );
 };
+
+function isValidUrl(str) {
+    try {
+        return Boolean(new URL(str));
+    } catch (e) {
+        return false;
+    }
+}
 
 export default UserInfo;

@@ -15,6 +15,8 @@ import * as uuid from 'uuid';
 import * as sharp from 'sharp';
 import tinify from 'tinify';
 import { Position } from '../positions/position.entity';
+import { CreatePositionDto } from 'src/positions/dto/create-position.dto';
+import { faker } from '@faker-js/faker';
 
 @Injectable()
 export class UsersService {
@@ -31,6 +33,7 @@ export class UsersService {
     const offset = (page - 1) * take;
 
     const [result, total] = await this.userRepository.findAndCount({
+      order: { id: 'DESC' },
       take: take,
       skip: offset,
       relations: ['position'],
@@ -117,5 +120,53 @@ export class UsersService {
     const optimizedBuffer = await tinify.fromBuffer(buffer).toBuffer();
 
     return Buffer.from(optimizedBuffer);
+  }
+
+  async seedDb() {
+    const countPositions = await this.positionRepository.count();
+
+    if (!countPositions) {
+      const positionsSeed: CreatePositionDto[] = [
+        { name: 'Developer' },
+        { name: 'HR' },
+        { name: 'Designer' },
+        { name: 'Security' },
+      ];
+      positionsSeed.forEach((seed) => {
+        const created = this.positionRepository.create(seed);
+        this.positionRepository.save(created);
+      });
+    }
+
+    const countUsers = await this.userRepository.count();
+    if (!countUsers) {
+      const usersSeed: CreateUserDto[] = [];
+      Array.from({ length: 45 }).forEach(() => {
+        const randomUser: CreateUserDto = {
+          name: faker.name.fullName(),
+          email: faker.internet.email(),
+          phone: faker.phone.number('+380#######'),
+          positionId: faker.datatype.number({ max: 4, min: 1 }),
+        };
+        usersSeed.push(randomUser);
+      });
+
+      const usersForSave = usersSeed.map(
+        async (seed) => await this.seedUser(seed),
+      );
+      await Promise.all(usersForSave);
+    }
+  }
+
+  private async seedUser(seed: CreateUserDto) {
+    const position = await this.positionRepository.findOne({
+      where: { id: seed.positionId },
+    });
+    const created = this.userRepository.create({
+      ...seed,
+      photo: faker.image.avatar(),
+      position,
+    });
+    return await this.userRepository.save(created);
   }
 }
